@@ -1,0 +1,13 @@
+[Unit]
+Description=SK106 guarded scavenging, single-purpose worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/worker/tribal-sk106-lab
+ExecStart=/usr/bin/python3 /home/worker/tribal-sk106-lab/sk106_auto_scavenge.py
+TimeoutStartSec=110
+MemoryMax=192M
+NoNewPrivileges=true
+Environment=PYTHONDONTWRITEBYTECODE=1

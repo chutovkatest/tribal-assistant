@@ -62,6 +62,17 @@ def main():
     except (OSError, ValueError, TypeError, RuntimeError) as exc:
         report["growth_scoreboard"] = {
             "status": "UNAVAILABLE", "error_type": type(exc).__name__}
+    harvest = ROOT / "auto-scavenge-state.json"
+    if harvest.exists():
+        row = json.loads(harvest.read_text())
+        report["auto_scavenge"] = {
+            "last_sent_at": row.get("last_sent_at"),
+            "last_result": row.get("last_result"),
+            "pending": row.get("pending"),
+            "module": "sk106_auto_scavenge.py"
+        }
+    else:
+        report["auto_scavenge"] = {"status": "NO_STATE_YET"}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     tmp = OUT.with_name(OUT.name + ".tmp")
     tmp.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
