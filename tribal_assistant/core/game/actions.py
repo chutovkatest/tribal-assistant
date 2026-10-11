@@ -7,6 +7,7 @@ answered. Guardrails live one layer up (tribal_assistant.core.agents.guardrails)
 
 from datetime import UTC, datetime
 from typing import Any
+from time import monotonic
 
 from loguru import logger
 from playwright.async_api import Error as PlaywrightError
@@ -270,10 +271,9 @@ class GameActions:
                 if wait is None or wait > FREE_WAIT_MAX:
                     break
 
-                try:
-                    await button.wait_for(state="visible", timeout=int(wait * 1000) + 3_000)
-                except PlaywrightError:
-                    break
+                # Never hold the shared browser lock while waiting for the
+                # free-finish window. The scheduled watcher will check again.
+                break
 
             classes = await button.get_attribute("class") or ""
             if "btn-instant-free" not in classes:
@@ -435,8 +435,11 @@ class GameActions:
         self, village_id: str, building: str, finish_free: bool = True
     ) -> ActionResult:
         """Queue the next level of `building` from the headquarters screen."""
+        started = monotonic()
         async with game_session.lock:
+            acquired = monotonic()
             page = await self._in_game(village_id, "main")
+            navigated = monotonic()
             before = await evaluate_page(page, BUILD_QUEUE_JS) or []
             next_before = await page.evaluate(NEXT_LEVEL_JS, building)
 
@@ -451,7 +454,11 @@ class GameActions:
                 )
 
             level = await button.first.get_attribute("data-level-next")
-            await self._click_and_settle(page, button.first)
+            click_started = monotonic()
+            # Build buttons can complete via AJAX; do not wait 15s for a navigation
+            # that will never occur. The existing queue verification remains mandatory.
+            await self._click_and_settle(page, button.first, timeout=3_000)
+            click_done = monotonic()
 
             if error := await self._game_error(page):
                 return ActionResult(False, "upgrade_building", error, {"building": building})
@@ -480,8 +487,14 @@ class GameActions:
                     {"building": building},
                 )
 
+            verified = monotonic()
             finished = await self.click_free_finish(page) if finish_free else 0
-
+            completed = monotonic()
+            logger.info(
+                "BUILD_LATENCY building={} lock_wait_s={:.3f} navigation_s={:.3f} click_s={:.3f} verify_s={:.3f} free_finish_s={:.3f} total_s={:.3f}",
+                building, acquired-started, navigated-acquired, click_done-click_started,
+                verified-click_done, completed-verified, completed-started,
+            )
             logger.info("{} nível {} na fila da aldeia {}", building, level, village_id)
             return ActionResult(
                 True,

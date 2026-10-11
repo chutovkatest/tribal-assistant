@@ -184,6 +184,12 @@ class Toolbox:
         return ToolResult(call.id, outcome.text, is_error=not outcome.ok)
 
     async def invoke(self, name: str, arguments: dict[str, Any]) -> ToolOutcome:
+        # The external resource-aware watchdog is the sole autonomous building writer.
+        # Direct operator commands still use the normal guardrails and game API.
+        if name == "upgrade_building" and self.agent.key != "operator":
+            outcome = ToolOutcome(False, "RECUSADO: build authority belongs to SK106 growth watchdog")
+            await self._trace("tool_result", outcome.text, name, is_error=True)
+            return outcome
         tool = self.tools.get(name)
         if tool is None:
             outcome = ToolOutcome(False, f"ferramenta {name!r} não disponível para {self.agent.title}")

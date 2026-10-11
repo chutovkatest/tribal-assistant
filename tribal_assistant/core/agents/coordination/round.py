@@ -129,6 +129,9 @@ class VillageRound:
                 logger.exception("Proponente {} falhou", proposer.key)
                 view.note(Insight(f"error:{proposer.key}", f"{proposer.title} falhou: {exc}", Certainty.FACT, now(), 1.0, None, proposer.key))
 
+        # Do not feed construction proposals to the internal coordinator:
+        # the external watchdog is the single construction planner/writer.
+        proposals = [p for p in proposals if p.action != "upgrade_building"]
         await self._trace(
             "plan",
             f"{len(proposals)} proposta(s), {len(constraints)} veto(s), {len(reservations)} reserva(s) no modo {mode.value}",
