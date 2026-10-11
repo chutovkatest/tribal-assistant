@@ -58,6 +58,9 @@ class DiplomacyProposer(Proposer):
     async def track(ledger: SocialLedger, state: dict[str, Any], ally_id: str | None, wait_hours: float) -> list[dict[str, Any]]:
         """Move every open application forward from what the tribe screen shows; return the ones still open."""
         listed = {str(a.get("ally_id")) for a in state.get("applications", [])}
+        # Fail closed on unrecognized/translated screens; do not close or resend applications.
+        if not ally_id and (state.get("screen_recognized") is False or state.get("applications_visible") is False):
+            return [a for a in await ledger.applications() if a.get("status") == PENDING]
         still: list[dict[str, Any]] = []
         for application in await ledger.applications():
             if application.get("status") != PENDING:
@@ -85,6 +88,11 @@ class DiplomacyProposer(Proposer):
         player = view.ctx.player or {}
         state = await view.actions.diplomacy.tribes(view.ctx.game_id)
         still = await self.track(ledger, state, player.get("ally_id"), knob(view, "diplomacy.apply_wait_hours"))
+        if state.get("screen_recognized") is False or (
+            not state.get("applications_visible", True) and still
+        ):
+            logger.warning("Tribe application state unverified; skip diplomacy actions to avoid duplicates")
+            return []
         if player.get("ally_id") or state.get("in_tribe"):
             return []
 

@@ -105,3 +105,24 @@ def test_applications_table_is_read_when_the_game_shows_it() -> None:
     <table class="vis"><tr><th>Candidaturas</th></tr><tr><td><a href="?screen=info_ally&id=809">ELE4</a></td></tr></table>"""
 
     assert TribeParser.state(html)["applications"] == [{"ally_id": "809", "tag": "ELE4"}]
+
+
+def test_slovak_tribe_screen_never_falsely_claims_membership() -> None:
+    html = """<td id="content_value"><h2>Kmeň</h2>
+    <form action="/game.php?screen=ally&action=create"><input name="name"></form>
+    <table class="vis"><tr><th>Pozvánky</th></tr><tr><td>Žiadne pozvánky</td></tr></table>
+    <table class="vis"><tr><th>Kmene v okolí</th></tr>
+    <tr><td>ROD</td><td>13 členov</td><td>300 bodov</td>
+    <td><a href="?screen=info_ally&mode=apply&id=32">Požiadať</a></td></tr></table>
+    <table class="vis"><tr><th>Žiadosti o prijatie</th></tr>
+    <tr><td><a href="?screen=info_ally&id=32">ROD</a></td></tr></table></td>"""
+    state = TribeParser.state(html)
+    assert state["screen_recognized"] and state["applications_visible"]
+    assert not state["in_tribe"]
+    assert state["applications"] == [{"ally_id": "32", "tag": "ROD"}]
+
+
+def test_unknown_tribe_screen_fails_closed() -> None:
+    state = TribeParser.state("<h2>Kmeň</h2><p>Neznáma obrazovka</p>")
+    assert not state["screen_recognized"]
+    assert not state["in_tribe"]

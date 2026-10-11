@@ -275,3 +275,14 @@ async def test_synced_mail_keeps_sender_and_thread(session: AsyncSession) -> Non
 
     stored = await SocialLedger(session).thread("9")
     assert stored["sender"] == "Vizinho" and stored["messages"][0]["text"] == "oi"
+
+
+async def test_unknown_locale_never_closes_pending_application(session: AsyncSession) -> None:
+    ledger = SocialLedger(session)
+    await ledger.set_application("32", "ROD", "pendente")
+    still = await DiplomacyProposer.track(
+        ledger, {"in_tribe": False, "screen_recognized": False,
+                 "applications_visible": False, "applications": []}, None, 0
+    )
+    assert [a["ally_id"] for a in still] == ["32"]
+    assert (await ledger.applications())[0]["status"] == "pendente"
