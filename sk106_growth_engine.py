@@ -99,7 +99,7 @@ def evaluate(v):
 def rank(v, candidates):
     allowed = set(candidates)
     scores = evaluate(v)
-    return [x["name"] for x in scores if x["name"] in allowed and x["score"] >= 2.0]
+    return [x["name"] for x in scores if x["name"] in allowed]
 
 
 def main():

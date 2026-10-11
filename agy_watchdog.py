@@ -45,7 +45,7 @@ def post_act(build):
           "dry_run":False,"source":"api"}
     req=Request(BASE+"/api/v1/agents/act",data=json.dumps(body).encode(),
        headers={"Content-Type":"application/json"},method="POST")
-    with urlopen(req,timeout=50) as r:return json.load(r)
+    with urlopen(req,timeout=90) as r:return json.load(r)
 def load_state():
     try:return json.loads(STATEFILE.read_text())
     except (FileNotFoundError,ValueError):return {}
