@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 import subprocess
 
+from sk106_growth_scoreboard import compute as compute_growth
+
 ROOT = Path("/home/worker/tribal-sk106-lab")
 OUT = Path("/srv/chutovka/sk106/status.json")
 
@@ -42,6 +44,24 @@ def main():
         ),
         "lc_rush_target": watch.get("lc_rush_target"),
     }
+    try:
+        world = json.loads((ROOT / "world-intel/latest_summary.json").read_text())
+        metric = compute_growth(rush, world)
+        report["growth_scoreboard"] = {
+            k: metric.get(k) for k in (
+                "generated_at", "own_snapshot_at", "own_status",
+                "world_observed_at", "world_status", "our_points",
+                "veronika_points", "point_gap", "growth_observation_hours",
+                "ours_points_per_hour_observed",
+                "veronika_points_per_hour_observed", "relative_points_per_hour",
+                "gap_trend", "hypothetical_catchup_hours_at_observed_rates",
+                "next_priority", "next_build_resource_wait_min_estimate",
+                "earliest_queue_completion", "construction_queue_empty",
+                "ordinary_troops_home", "scavenging_opportunity")
+        }
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        report["growth_scoreboard"] = {
+            "status": "UNAVAILABLE", "error_type": type(exc).__name__}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     tmp = OUT.with_name(OUT.name + ".tmp")
     tmp.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
