@@ -45,7 +45,33 @@ def post_act(build):
           "dry_run":False,"source":"api"}
     req=Request(BASE+"/api/v1/agents/act",data=json.dumps(body).encode(),
        headers={"Content-Type":"application/json"},method="POST")
-    with urlopen(req,timeout=90) as r:return json.load(r)
+    with urlopen(req,timeout=180) as r:return json.load(r)
+def refresh_pending_view(p,v,state):
+    """Refresh game evidence, never repeat the construction POST."""
+    pending=state.get("build_pending")
+    if not isinstance(pending,dict):return p,v
+    if age_of(v.get("synced_at"))<age_of(pending.get("requested_at")):return p,v
+    try:
+        req=Request(BASE+"/api/v1/assistant/sync",data=b"{}",headers={"Content-Type":"application/json"},method="POST")
+        with urlopen(req,timeout=180) as r:reply=json.load(r)
+        if not reply.get("ok"):raise RuntimeError(str(reply.get("message","sync failed"))[:150])
+        p,v=safe_view()
+        state["last_action_refresh"]=ts()
+        state.pop("last_refresh_error",None)
+    except Exception as exc:
+        state["last_refresh_error"]=type(exc).__name__+": "+str(exc)[:150]
+        # A scheduled sync may have produced the needed evidence while this
+        # explicit sync was still waiting for the shared browser lock.
+        try:
+            fresh_p,fresh_v=safe_view()
+            if age_of(fresh_v.get("synced_at"))<age_of(pending.get("requested_at")):
+                p,v=fresh_p,fresh_v
+                state["last_action_refresh"]=ts()
+                state.pop("last_refresh_error",None)
+        except Exception:
+            pass
+    return p,v
+
 def load_state():
     try:return json.loads(STATEFILE.read_text())
     except (FileNotFoundError,ValueError):return {}
@@ -68,6 +94,8 @@ def safe_view():
     v=villages[0]
     if v.get("coords")!="502|458" or v.get("id")!=1:
         raise RuntimeError("village pin mismatch")
+    if not {"smith", "main", "stable"}.issubset(set(b.get("name") for b in v.get("buildings",[]))):
+        raise RuntimeError("critical LC buildings missing from game snapshot")
     if age_of(v.get("synced_at"))>MAX_AGE:
         raise RuntimeError("game snapshot older than 10 minutes; do not act on stale data")
     return p,v
@@ -91,10 +119,29 @@ def affordable(v):
     return result
 
 def ranked_candidates(v,candidates,priorities):
+    # Strict Light Cavalry Rush goals override general early economic ranking.
+    # Only the existing safe, pinned, verified action path can issue upgrades.
+    from sk106_lc_rush_policy import lc_rush_candidates
+    active, chosen, milestone = lc_rush_candidates(v, candidates)
+    if active:
+        print("LC_RUSH_PRIORITY", milestone, "eligible", chosen)
+        return chosen
     # One deterministic 24h resource-opportunity policy. AI remains advisory.
     try:
-        from sk106_growth_engine import rank
-        return rank(v, candidates)
+        from sk106_growth_engine import evaluate
+        ranked = evaluate(v)
+        if ranked:
+            leader = ranked[0]
+            # Save scarce resources for the best 24h-growth investment.
+            # Do not automatically buy cheap low-ROI buildings just because
+            # they became affordable earlier than a mine or core upgrade.
+            if leader["name"] not in candidates and leader["wait_hours"] <= 4.0:
+                print("RESERVE_RESOURCES_FOR", leader["name"],
+                      "wait_hours", leader["wait_hours"],
+                      "current_affordable", candidates)
+                return []
+            return [row["name"] for row in ranked if row["name"] in candidates]
+        return []
     except Exception as exc:
         print("GROWTH_ENGINE_FALLBACK", type(exc).__name__, str(exc)[:120])
     b=buildings(v)
@@ -259,9 +306,15 @@ def main():
         state["last_check"]=ts()
         try:
             p,v=safe_view()
+            p,v=refresh_pending_view(p,v,state)
             state["last_error"]=None
             block_action=reconcile_build_pending(state,v)
             candidates=affordable(v)
+            from sk106_lc_rush_policy import lc_rush_candidates
+            lc_active, _, lc_goal = lc_rush_candidates(v, candidates)
+            state["lc_rush_target"]=lc_goal
+            if lc_active:
+                state["ai_status"]="LC_RUSH_RULES"
             present_signal=signal(p,v,candidates)
             has_changed=present_signal!=state.get("signal")
             state["signal"]=present_signal
@@ -272,7 +325,7 @@ def main():
             due=age_of(state.get("last_ai_success"))>MAX_AI_INTERVAL
             periodic=age_of(state.get("last_ai_attempt"))>MIN_AI_INTERVAL
             cooldown=age_of(state.get("last_ai_attempt"))<state.get("ai_backoff_seconds",0)
-            if (due or (has_changed and periodic)) and not cooldown:
+            if (due or (has_changed and periodic)) and not cooldown and not lc_active:
                 state["last_ai_attempt"]=ts()
                 try:
                     names,why=antigravity(p,v,candidates,state)
@@ -312,6 +365,16 @@ def main():
                         # Game explicitly rejected: unlike a timeout, this is a known no-op.
                         state.pop("build_pending",None)
                     print("SAFE_BUILD",json.dumps(state["last_build_result"],ensure_ascii=False))
+                    # Acknowledged browser actions must be reflected in status immediately.
+                    # The pending guard remains until a fresh game snapshot confirms them.
+                    if reply.get("ok") is True:
+                        p,v=refresh_pending_view(p,v,state)
+                        reconcile_build_pending(state,v)
+                        candidates=affordable(v)
+                        state["signal"]=signal(p,v,candidates)
+                        state["points"]=p["points"]
+                        state["queue"]=state["signal"]["queue"]
+                        state["affordable"]=candidates
                 except (TimeoutError, ConnectionError, URLError) as ex:
                     # Server can finish the command after the caller times out.
                     # Do not repeat until the new game snapshot resolves the outcome.

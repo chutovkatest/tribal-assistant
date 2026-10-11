@@ -1,0 +1,12 @@
+[Unit]
+Description=Check SK106 village every 2 minutes; Gemini tactics on material changes or ~4-minute heartbeat
+
+[Timer]
+OnBootSec=90sec
+OnUnitInactiveSec=2min
+AccuracySec=15sec
+Persistent=true
+Unit=sk106-agy-watchdog.service
+
+[Install]
+WantedBy=timers.target
