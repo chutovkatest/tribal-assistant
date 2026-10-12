@@ -15,7 +15,7 @@ ROOT = Path("/home/worker/tribal-sk106-lab")
 API = "http://127.0.0.1:8766/api/v1/game/overview"
 OUTPUT = ROOT / "world-intel" / "growth-engine-latest.json"
 BASE_POINTS = {
-    "main": 10, "barracks": 16, "smith": 19, "market": 10,
+    "main": 10, "barracks": 16, "stable": 13, "smith": 19, "market": 10,
     "wood": 6, "stone": 6, "iron": 6, "farm": 5,
     "storage": 6, "hide": 5, "wall": 8,
 }
