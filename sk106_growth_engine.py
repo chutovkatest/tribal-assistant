@@ -36,7 +36,7 @@ def _value(v, b):
         return None
     if b.get("queued_level") is not None:
         return None
-    if b.get("blocker") and not str(b["blocker"]).startswith("Suroviny"):
+    if b.get("blocker") and not str(b["blocker"]).startswith("Suroviny") and b.get("blocker") != "Rad je momentálne plný":
         return None
     prod = [max(0.1, float(v.get(x, 0))) for x in ("wood_prod", "clay_prod", "iron_prod")]
     stock = [float(v.get(x, 0)) for x in RESOURCE]
