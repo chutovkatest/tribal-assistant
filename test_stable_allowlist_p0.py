@@ -41,7 +41,7 @@ class StableAllowlistIntegration(unittest.TestCase):
     def test_ready_after_stage3(self):
         v=village(level=3)
         self.assertEqual(lc_rush_candidates(v, affordable(v)),
-                         (True,[],"LC_MILESTONES_READY_CHECK_RESEARCH"))
+                         (False,[],"LC_MILESTONES_READY_CHECK_RESEARCH"))
 
 if __name__=="__main__":
     unittest.main()

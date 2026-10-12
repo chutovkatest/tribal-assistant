@@ -23,4 +23,4 @@ def lc_rush_candidates(village, affordable):
         if b.get("next_level") == level and name in affordable and not b.get("queued_level"):
             return True, [name], f"{name}:{level}"
         return True, [], f"WAIT_FOR_{name}:{level}"
-    return True, [], "LC_MILESTONES_READY_CHECK_RESEARCH"
+    return False, [], "LC_MILESTONES_READY_CHECK_RESEARCH"
