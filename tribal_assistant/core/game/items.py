@@ -2,7 +2,7 @@
 
 import re
 
-OWNED = re.compile(r"Da propriedade de:\s*(\d+)")
+OWNED = re.compile(r"(?:Da propriedade de|Vlastn[ií]ctvo|Vlastn[ií]te|Po[cč]et|Owned|Mno[zž]stvo):\s*(\d+)", re.I)
 
 
 class ItemCount:

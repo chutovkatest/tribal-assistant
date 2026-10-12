@@ -7,8 +7,8 @@ from urllib.parse import parse_qs, urlparse
 
 from bs4 import BeautifulSoup, Tag
 
-INTRO_THREAD = re.compile(r"apresent|recrut|boas[\s-]*vindas|novos membros|candidat|bem[\s-]*vindo", re.I)
-LEADER = re.compile(r"l[íi]der|fundador|duque|recrutador|diplomata", re.I)
+INTRO_THREAD = re.compile(r"apresent|recrut|boas[\s-]*vindas|novos membros|candidat|bem[\s-]*vindo|priv[ií]tan|nov[ií] [cč]len|zozn[aá]men|prihl[aá]š", re.I)
+LEADER = re.compile(r"l[íi]der|fundador|duque|recrutador|diplomata|vodca|zakladate[lľ]|vojvoda|n[aá]bor[aá]r", re.I)
 
 
 def param(href: str, name: str) -> str | None:

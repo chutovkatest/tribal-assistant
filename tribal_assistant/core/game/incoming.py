@@ -13,9 +13,9 @@ WATCHTOWER_TAG = "torre"
 SIZE_WORDS = {"small": "pequeno", "medium": "médio", "large": "grande"}
 SIZE_TROOPS = {"small": 1000, "medium": 5000, "large": 12000}
 SIZE_HINTS = (
-    ("small", ("small", "pequeno")),
-    ("medium", ("medium", "médio", "medio")),
-    ("large", ("large", "grande")),
+    ("small", ("small", "pequeno", "malý", "maly", "mal[iý]")),
+    ("medium", ("medium", "médio", "medio", "stredný", "stredny", "střední")),
+    ("large", ("large", "grande", "veľký", "velky", "velký")),
 )
 PROBES = (
     ("spy", "espião"),

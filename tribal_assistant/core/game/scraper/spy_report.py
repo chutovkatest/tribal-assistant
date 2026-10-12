@@ -27,6 +27,23 @@ BUILDING_LABELS = {
     "armazém": "storage",
     "esconderijo": "hide",
     "muralha": "wall",
+    "hlavná budova": "main", "hlavní budova": "main",
+    "kasárne": "barracks", "kasárna": "barracks",
+    "stajne": "stable", "stáje": "stable",
+    "dielňa": "garage", "dílna": "garage",
+    "kováčska dielňa": "smith", "kovárna": "smith",
+    "panský dvor": "snob", "panský dvůr": "snob",
+    "trhovisko": "market", "tržiště": "market",
+    "nádvorie": "place", "nádvoří": "place",
+    "socha": "statue", "kostol": "church", "kostel": "church",
+    "strážna veža": "watchtower", "strážní věž": "watchtower",
+    "drevorubač": "wood", "dřevorubec": "wood",
+    "hlinisko": "stone", "lom na hlinu": "stone",
+    "železná baňa": "iron", "železný důl": "iron",
+    "selský dvor": "farm", "selský dvůr": "farm",
+    "skladisko": "storage", "skladiště": "storage",
+    "úkryt": "hide", "skrýš": "hide",
+    "hradby": "wall", "hradba": "wall",
 }
 BUILDING_IMAGE = re.compile(r"buildings/(?:mid/)?([a-z_]+?)\d*\.(?:png|webp|gif)")
 UNIT_CLASS = re.compile(r"^unit-item-([a-z_]+)$")
@@ -79,7 +96,7 @@ class SpyReportParser:
             if name:
                 found[name] = cls.number(item.get_text(" ", strip=True))
 
-        if not found and re.search(r"nenhum", box.get_text(" ", strip=True), re.IGNORECASE):
+        if not found and re.search(r"nenhum|žiadne|žádné|none", box.get_text(" ", strip=True), re.IGNORECASE):
             return dict.fromkeys(ORDER, 0)
 
         return {name: found.get(name, 0) for name in ORDER} if found else None
