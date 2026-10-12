@@ -1,0 +1,15 @@
+[Unit]
+Description=SK106 Antigravity tactical watch with idempotent API action verification
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/worker/tribal-sk106-lab
+ExecStart=/usr/bin/python3 /home/worker/tribal-sk106-lab/agy_watchdog.py
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=HOME=/home/worker
+TimeoutStartSec=540
+MemoryMax=1300M
+Nice=12
+NoNewPrivileges=true

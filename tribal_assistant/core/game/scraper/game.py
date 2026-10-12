@@ -14,9 +14,10 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from tribal_assistant.core.game.incoming import IncomingLabel, size_of
+from tribal_assistant.core.game.locale_text import (has_protection_context, fold, relative_day, report_category, report_month)
 
 SECONDS_PER_HOUR = 3600
-SERVER_TZ = ZoneInfo("America/Sao_Paulo")
+SERVER_TZ = ZoneInfo("Europe/Bratislava")
 
 _COORDS = re.compile(r"(\d{1,3}\|\d{1,3})")
 _NUMBER = re.compile(r"(\d+)")
@@ -217,28 +218,62 @@ def _server_time(now: datetime, month: int, day: int, hour: int, minute: int, se
 
 
 def parse_protection(text: str, now: datetime | None = None) -> datetime | None:
-    """"A sua proteção de iniciante acaba em 03.10. às 20:38:21" -> UTC datetime."""
-    match = _PROTECTION.search(text or "")
-    if not match:
-        return None
-    day, month, hour, minute, second = (int(g) for g in match.groups())
-    return _server_time(now or datetime.now(UTC), month, day, hour, minute, second)
+    """Read a newcomer protection expiry only when it is near an explicit protection label."""
+    text = text or ""
+    # SK/CZ/PT/EN date forms: "13.10. o 20:38:21" / "03.10. às 20:38:21".
+    pattern = re.compile(
+        r"(?<!\d)(\d{1,2})\.(\d{1,2})\.?\s*(?:(\d{4})\s*)?(?:(?:o|as|às|at)\s*)?"
+        r"(\d{1,2}):(\d{2})(?::(\d{2}))?", re.I)
+    for match in pattern.finditer(text):
+        context = fold(text[max(0,match.start()-160):match.start()])
+        if not has_protection_context(context):
+            continue
+        if not any(k in context for k in ("konci", "skonci", "trva", "uplynie", "acaba", "ends", "until", "expires", "protecao de iniciante")):
+            continue
+        day,month,year,h,m,second=match.groups()
+        try:
+            if year:
+                return datetime(int(year),int(month),int(day),int(h),int(m),
+                                int(second or 0),tzinfo=SERVER_TZ).astimezone(UTC)
+            return _server_time(now or datetime.now(UTC),int(month),int(day),
+                                int(h),int(m),int(second or 0))
+        except ValueError:
+            return None
+    return None
 
 
 def parse_report_date(text: str, now: datetime | None = None) -> datetime | None:
-    """Report list dates: "set. 28, 20:42", "hoje às 20:42", "ontem às 08:10"."""
+    """Localized list labels: dnes/včera, hoje/ontem, numeric dd.mm., month names."""
     now = now or datetime.now(UTC)
-    text = (text or "").strip().lower()
-    clock = re.search(r"(\d{1,2}):(\d{2})", text)
-    if clock and ("hoje" in text or "ontem" in text or "amanhã" in text):
-        shift = {"ontem": -1, "amanhã": 1}.get(next((w for w in ("ontem", "amanhã") if w in text), ""), 0)
-        local = now.astimezone(SERVER_TZ) + timedelta(days=shift)
-        return _server_time(now, local.month, local.day, int(clock[1]), int(clock[2]))
-    match = _REPORT_DATE.search(text)
-    if not match or match[1][:3] not in _MONTHS:
+    text = (text or "").strip()
+    clock = re.search(r"(?<!\d)(\d{1,2}):(\d{2})(?::(\d{2}))?", text)
+    if not clock:
         return None
-    return _server_time(now, _MONTHS[match[1][:3]], int(match[2]), int(match[3]), int(match[4]))
-
+    h, minute, sec=(int(clock.group(1)),int(clock.group(2)),int(clock.group(3) or 0))
+    day_offset=relative_day(text)
+    if day_offset is not None:
+        local=now.astimezone(SERVER_TZ)+timedelta(days=day_offset)
+        return _server_time(now,local.month,local.day,h,minute,sec)
+    date=re.search(r"(?<!\d)(\d{1,2})\.(\d{1,2})\.?(\d{4})?",text)
+    if date:
+        day,month,year=date.groups()
+        try:
+            if year:
+                return datetime(int(year),int(month),int(day),h,minute,sec,
+                                tzinfo=SERVER_TZ).astimezone(UTC)
+            return _server_time(now,int(month),int(day),h,minute,sec)
+        except ValueError:
+            return None
+    date=re.search(r"([^\W\d_]{3,12})\.?\s+(\d{1,2}),?\s*(?:o|at|às|as)?\s*(\d{1,2}):(\d{2})",text,re.I)
+    if date:
+        month=report_month(date.group(1))
+        if month:
+            try:
+                return _server_time(now,month,int(date.group(2)),int(date.group(3)),
+                                    int(date.group(4)),0)
+            except ValueError:
+                return None
+    return None
 
 def parse_player(game_data: Mapping[str, Any], overview_text: str = "") -> PlayerSnapshot:
     player = game_data.get("player") or {}
@@ -460,19 +495,7 @@ def parse_scavenge(rows: Sequence[Mapping[str, Any]]) -> tuple[ScavengeSnapshot,
 
 
 def _report_category(title: str) -> str:
-    t = title.lower()
-    if "explorador" in t or "espi" in t:
-        return "scout"
-    if "atac" in t:
-        return "attack"
-    if "apoi" in t:
-        return "support"
-    if "realiza" in t:
-        return "achievement"
-    if "comércio" in t or "comercio" in t or "envia" in t or "mercado" in t:
-        return "trade"
-    return "other"
-
+    return report_category(title)
 
 def _report_result(icons: str) -> str | None:
     for color in ("green", "yellow", "red", "blue"):

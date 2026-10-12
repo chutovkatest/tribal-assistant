@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from tribal_assistant.core.game.actions import GameActions
 
 SCREEN = "info_player"
-EDIT = '#content_value a:has-text("Editar perfil"), #content_value a:has-text("Editar"), #content_value a[href*="edit_profile"], #content_value a[href*="mode=edit"]'
+EDIT = '#content_value a:has-text("Editar perfil"), #content_value a:has-text("Upraviť profil"), #content_value a:has-text("Upraviť"), #content_value a:has-text("Editar"), #content_value a[href*="edit_profile"], #content_value a[href*="mode=edit"]'
 TEXT_FIELD = 'form textarea[name="personal_text"], form textarea[name="text"], form textarea'
 SUBMIT = 'form input[type="submit"]:visible, form button[type="submit"]:visible, form .btn-confirm-yes:visible, form input.btn:visible'
 CURRENT_JS = "() => (document.querySelector('form textarea')?.value || '').trim()"

@@ -33,6 +33,7 @@ from tribal_assistant.core.game.scraper.game import (
 )
 from tribal_assistant.core.game.scraper.social import InboxParser
 from tribal_assistant.core.game.scraper.spy_report import SpyReportParser
+from tribal_assistant.core.game.locale_text import is_battle_report
 from tribal_assistant.core.game.screens import ScreenCatalog
 from tribal_assistant.core.game.session import game_session
 from tribal_assistant.core.game.state import session_state
@@ -138,7 +139,7 @@ REPORTS_JS = r"""() => [...document.querySelectorAll('#report_list tr')]
     const q = tr.querySelector('.quickedit[data-id]');
     return {id: q.dataset.id, title: q.innerText, received: tr.cells[tr.cells.length - 1].innerText,
       icons: [...tr.querySelectorAll('img')].map(i => i.getAttribute('src')).join(' '),
-      is_new: /\(nov[oa]\)/i.test(tr.innerText)};
+      is_new: /\((?:nov[áaéey]|new|novo)\)/i.test(tr.innerText) || tr.classList.contains("unread")};
   })"""
 
 REPORT_DETAIL_JS = r"""() => {
@@ -147,7 +148,7 @@ REPORT_DETAIL_JS = r"""() => {
   const results = document.querySelector('#attack_results');
   let loot = [], haul = '';
   if (results) {
-    const row = [...results.querySelectorAll('tr')].find(r => /saque/i.test(r.innerText));
+    const row = [...results.querySelectorAll('tr')].find(r => /saque|koris[tť]|ukorist|l[uú]p|loot|plunder/i.test(r.innerText));
     if (row) {
       loot = [...row.querySelectorAll('.nowrap')].map(e => e.innerText);
       haul = (row.innerText.match(/\d+\s*\/\s*\d+/) || [''])[0];
@@ -344,7 +345,7 @@ async def _read_reports(page: Page, village_id: str, known: set[str]) -> list[di
         return rows
 
     pending = [
-        r for r in rows if r["id"] not in known and any(word in str(r.get("title", "")).lower() for word in ("atac", "espi", "explorador"))
+        r for r in rows if r["id"] not in known and is_battle_report(str(r.get("title", "")))
     ][:REPORT_DETAILS_PER_SYNC]
     for row in pending:
         await open_screen(page, "report", village_id, mode="all", view=row["id"])

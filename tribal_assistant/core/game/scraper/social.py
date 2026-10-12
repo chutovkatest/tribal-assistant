@@ -1,13 +1,14 @@
 """Social screens in, plain dicts out: inbox, one conversation, friends, tribe lists, members and forum."""
 
 import re
+import unicodedata
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 from bs4 import BeautifulSoup, Tag
 
-INTRO_THREAD = re.compile(r"apresent|recrut|boas[\s-]*vindas|novos membros|candidat|bem[\s-]*vindo", re.I)
-LEADER = re.compile(r"l[íi]der|fundador|duque|recrutador|diplomata", re.I)
+INTRO_THREAD = re.compile(r"apresent|recrut|boas[\s-]*vindas|novos membros|candidat|bem[\s-]*vindo|priv[ií]tan|nov[ií] [cč]len|zozn[aá]men|prihl[aá]š", re.I)
+LEADER = re.compile(r"l[íi]der|fundador|duque|recrutador|diplomata|vodca|zakladate[lľ]|vojvoda|n[aá]bor[aá]r", re.I)
 
 
 def param(href: str, name: str) -> str | None:
@@ -139,19 +140,26 @@ class BuddiesParser:
 
 class TribeParser:
     @staticmethod
-    def _table(soup: BeautifulSoup, head: str) -> Tag | None:
+    def _table(soup: BeautifulSoup, heads: tuple[str, ...]) -> Tag | None:
+        def normalized(value: str) -> str:
+            return "".join(c for c in unicodedata.normalize("NFKD", value.casefold()) if not unicodedata.combining(c))
         for table in soup.select("table.vis"):
             th = table.select_one("th")
-            if th is not None and head in th.get_text():
+            if th is not None and any(normalized(head) in normalized(th.get_text(" ", strip=True)) for head in heads):
                 return table
         return None
 
     @classmethod
     def state(cls, html: str) -> dict[str, Any]:
         soup = BeautifulSoup(html, "lxml")
-        nearby_table = cls._table(soup, "Tribos em sua área")
-        invites_table = cls._table(soup, "Convites")
-        applications_table = cls._table(soup, "Candidatura")
+        nearby_table = cls._table(soup, ("Tribos em sua área", "Kmene v okolí", "Kmene vo vašom okolí", "Kmene v tvojej oblasti"))
+        invites_table = cls._table(soup, ("Convites", "Pozvánky", "Pozvania"))
+        applications_table = cls._table(soup, ("Candidatura", "Žiadosti", "Žiadosti o prijatie", "Prihlášky"))
+        create_form = soup.select_one('form[action*="action=create"]') is not None
+        # Never infer membership from absent Portuguese-language tables.
+        member_link = soup.select_one('a[href*="screen=ally"][href*="mode=members"]') is not None
+        recognized = bool(nearby_table or invites_table or applications_table or create_form or member_link)
+        in_tribe = bool(member_link and not create_form)
 
         nearby = []
         for row in nearby_table.select("tr") if nearby_table else []:
@@ -183,7 +191,9 @@ class TribeParser:
                 continue
             applications.append({"ally_id": param(str(ally["href"]), "id"), "tag": text_of(ally)})
 
-        return {"in_tribe": nearby_table is None and invites_table is None, "nearby": nearby, "invites": invites, "applications": applications}
+        return {"in_tribe": in_tribe, "screen_recognized": recognized,
+                "applications_visible": applications_table is not None,
+                "nearby": nearby, "invites": invites, "applications": applications}
 
     @staticmethod
     def members(html: str) -> list[dict[str, Any]]:

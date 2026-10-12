@@ -1,0 +1,504 @@
+{
+  "at_utc": "2026-10-12T15:56:54.231254+00:00",
+  "player": {
+    "name": "chlpatucky",
+    "world": "sk106",
+    "points": 369,
+    "rank": 923,
+    "incomings": 0,
+    "protection_until": "2026-10-14T19:45:36Z",
+    "ally_id": null
+  },
+  "village": {
+    "coords": "502|458",
+    "synced_at": "2026-10-12T15:54:08.414917Z",
+    "resources": {
+      "wood": 3683,
+      "clay": 2518,
+      "iron": 1500,
+      "wood_prod": 224,
+      "clay_prod": 193,
+      "iron_prod": 143,
+      "storage": 4247,
+      "pop_current": 272,
+      "pop_max": 729
+    },
+    "buildings": [
+      {
+        "name": "main",
+        "level": 10,
+        "can_build": true,
+        "next_level": 11,
+        "next_wood": 908,
+        "next_clay": 908,
+        "next_iron": 706,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "barracks",
+        "level": 5,
+        "can_build": true,
+        "next_level": 6,
+        "next_wood": 635,
+        "next_clay": 584,
+        "next_iron": 286,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "stable",
+        "level": 3,
+        "can_build": true,
+        "next_level": 4,
+        "next_wood": 540,
+        "next_clay": 503,
+        "next_iron": 520,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "garage",
+        "level": 0,
+        "can_build": false,
+        "next_level": null,
+        "next_wood": null,
+        "next_clay": null,
+        "next_iron": null,
+        "blocker": "requisitos não atendidos",
+        "queued_level": null
+      },
+      {
+        "name": "watchtower",
+        "level": 0,
+        "can_build": true,
+        "next_level": 1,
+        "next_wood": 12000,
+        "next_clay": 14000,
+        "next_iron": 10000,
+        "blocker": "Sedliacky dvor je príliš malý",
+        "queued_level": null
+      },
+      {
+        "name": "snob",
+        "level": 0,
+        "can_build": false,
+        "next_level": null,
+        "next_wood": null,
+        "next_clay": null,
+        "next_iron": null,
+        "blocker": "requisitos não atendidos",
+        "queued_level": null
+      },
+      {
+        "name": "smith",
+        "level": 5,
+        "can_build": true,
+        "next_level": 6,
+        "next_wood": 699,
+        "next_clay": 606,
+        "next_iron": 762,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "place",
+        "level": 1,
+        "can_build": false,
+        "next_level": null,
+        "next_wood": null,
+        "next_clay": null,
+        "next_iron": null,
+        "blocker": "nível máximo",
+        "queued_level": null
+      },
+      {
+        "name": "statue",
+        "level": 1,
+        "can_build": false,
+        "next_level": null,
+        "next_wood": null,
+        "next_clay": null,
+        "next_iron": null,
+        "blocker": "nível máximo",
+        "queued_level": null
+      },
+      {
+        "name": "market",
+        "level": 6,
+        "can_build": true,
+        "next_level": 7,
+        "next_wood": 400,
+        "next_clay": 430,
+        "next_iron": 400,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "wood",
+        "level": 11,
+        "can_build": true,
+        "next_level": 12,
+        "next_wood": 582,
+        "next_clay": 868,
+        "next_iron": 446,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "stone",
+        "level": 10,
+        "can_build": true,
+        "next_level": 11,
+        "next_wood": 709,
+        "next_clay": 525,
+        "next_iron": 344,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "iron",
+        "level": 8,
+        "can_build": true,
+        "next_level": 9,
+        "next_wood": 453,
+        "next_clay": 454,
+        "next_iron": 391,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "farm",
+        "level": 8,
+        "can_build": true,
+        "next_level": 9,
+        "next_wood": 367,
+        "next_clay": 369,
+        "next_iron": 230,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "storage",
+        "level": 8,
+        "can_build": true,
+        "next_level": 9,
+        "next_wood": 393,
+        "next_clay": 338,
+        "next_iron": 231,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "hide",
+        "level": 7,
+        "can_build": true,
+        "next_level": 8,
+        "next_wood": 238,
+        "next_clay": 286,
+        "next_iron": 238,
+        "blocker": null,
+        "queued_level": null
+      },
+      {
+        "name": "wall",
+        "level": 7,
+        "can_build": true,
+        "next_level": 8,
+        "next_wood": 252,
+        "next_clay": 548,
+        "next_iron": 101,
+        "blocker": null,
+        "queued_level": null
+      }
+    ],
+    "units": [
+      {
+        "name": "spear",
+        "total": 14,
+        "home": 2,
+        "away": 12,
+        "available": true,
+        "max_recruit": 73,
+        "blocker": null
+      },
+      {
+        "name": "sword",
+        "total": 10,
+        "home": 2,
+        "away": 8,
+        "available": true,
+        "max_recruit": 21,
+        "blocker": null
+      },
+      {
+        "name": "spy",
+        "total": 0,
+        "home": 0,
+        "away": 0,
+        "available": false,
+        "max_recruit": 0,
+        "blocker": "Stajne (Stupeň 1) Výskum"
+      },
+      {
+        "name": "light",
+        "total": 0,
+        "home": 0,
+        "away": 0,
+        "available": false,
+        "max_recruit": 0,
+        "blocker": "Stajne (Stupeň 3) Výskum"
+      },
+      {
+        "name": "knight",
+        "total": 1,
+        "home": 1,
+        "away": 0,
+        "available": false,
+        "max_recruit": 0,
+        "blocker": "Estátua (Nível 1)"
+      }
+    ],
+    "recruit_queue": [],
+    "scavenge": [
+      {
+        "village_id": 1,
+        "free_options": [
+          1
+        ],
+        "units_home": {
+          "spear": 2,
+          "sword": 2
+        },
+        "runs": [],
+        "note": "tropas em casa não chegam à população mínima por coleta"
+      }
+    ]
+  },
+  "agent_settings": {
+    "enabled": true,
+    "dry_run": true,
+    "llm_agents": [
+      "strategist"
+    ],
+    "interval_minutes": 3,
+    "plan_refresh_minutes": 90,
+    "auto_finish_free": false
+  },
+  "world_config": {
+    "speed": 1.5,
+    "unit_speed": 0.6,
+    "scavenging": null,
+    "beginner_protection": null,
+    "night_bonus": null,
+    "night_bonus_active": null
+  },
+  "quests": {
+    "rewards": [
+      {
+        "reward_id": "158760",
+        "label": "Kováčska dielňa 4 150 150 100 Prevziať Prevziať všetko"
+      },
+      {
+        "reward_id": "159982",
+        "label": "Hlavná budova 9 150 150 100 Prevziať Prevziať všetko"
+      },
+      {
+        "reward_id": "176963",
+        "label": "Stajne 1 150 150 100 Prevziať Prevziať všetko"
+      }
+    ],
+    "quests": [
+      {
+        "title": "Boj o informácie",
+        "state": "finished",
+        "can_complete": true
+      },
+      {
+        "title": "Výskum je kľúčový",
+        "state": "new",
+        "can_complete": false
+      },
+      {
+        "title": "Použi relikviu",
+        "state": "new",
+        "can_complete": false
+      },
+      {
+        "title": "Na tvoj príkaz!",
+        "state": "new",
+        "can_complete": false
+      },
+      {
+        "title": "Pokročilý tréning",
+        "state": "progress",
+        "can_complete": false
+      },
+      {
+        "title": "Svetobežník",
+        "state": "new",
+        "can_complete": false
+      },
+      {
+        "title": "Kupčenie a obchod",
+        "state": "new",
+        "can_complete": false
+      },
+      {
+        "title": "Vonkajší vzhľad",
+        "state": "new",
+        "can_complete": false
+      },
+      {
+        "title": "Moc kmeňov",
+        "state": "new",
+        "can_complete": false
+      }
+    ]
+  },
+  "competitor": [
+    {
+      "nickname": "veroniccba",
+      "points": 429,
+      "rank": 595,
+      "delta_points": 0,
+      "tribe_id": 32
+    },
+    {
+      "nickname": "chlpatucky",
+      "points": 369,
+      "rank": 895,
+      "delta_points": 0,
+      "tribe_id": 0
+    }
+  ],
+  "watchdog": {
+    "last_check": "2026-10-12T15:54:59+00:00",
+    "signal": {
+      "points": 369,
+      "levels": {
+        "main": 10,
+        "wood": 11,
+        "stone": 10,
+        "iron": 8,
+        "farm": 8,
+        "storage": 8,
+        "barracks": 5
+      },
+      "queue": [],
+      "resources_band": [
+        24,
+        16,
+        10
+      ],
+      "affordable": [
+        "barracks",
+        "farm",
+        "hide",
+        "iron",
+        "main",
+        "market",
+        "smith",
+        "stable",
+        "stone",
+        "storage",
+        "wall",
+        "wood"
+      ],
+      "incoming": 0,
+      "world_snapshot": "2026-10-12T15:33:19+00:00"
+    },
+    "points": 369,
+    "queue": [],
+    "affordable": [
+      "main",
+      "barracks",
+      "stable",
+      "smith",
+      "market",
+      "wood",
+      "stone",
+      "iron",
+      "farm",
+      "storage",
+      "hide",
+      "wall"
+    ],
+    "last_error": null,
+    "last_ai_attempt": "2026-10-11T19:57:25+00:00",
+    "last_ai_success": "2026-10-11T19:57:37+00:00",
+    "ai_backoff_seconds": 0,
+    "ai_priorities": [
+      "stone",
+      "iron",
+      "main",
+      "barracks"
+    ],
+    "ai_reason": "Keďže hlina predstavuje hlavné surovinové obmedzenie a stavebný rad je prázdny, prioritou je posilnenie ťažby hliny a železa spolu s rozvojom hlavnej budovy a kasární pre zrýchlenie ďalšej výstavby a náboru vojska.",
+    "ai_status": "LC_RUSH_RULES",
+    "last_build_attempt": "2026-10-12T13:05:37+00:00",
+    "last_build_target": "stable",
+    "last_build_result": {
+      "at": "2026-10-12T13:06:55+00:00",
+      "target": "stable",
+      "ok": true,
+      "detail": "CONFIRMED_BY_NEW_GAME_SNAPSHOT"
+    },
+    "transport_timeout_count": 6,
+    "last_transport_error": {
+      "at": "2026-10-11T14:37:41+00:00",
+      "target": "wall",
+      "type": "TimeoutError"
+    },
+    "last_action_refresh": "2026-10-12T13:06:55+00:00",
+    "lc_rush_target": "LC_MILESTONES_READY_CHECK_RESEARCH"
+  },
+  "scavenge_runner": {
+    "last_sent_at": "2026-10-12T15:24:49.088446+00:00",
+    "last_result": {
+      "at": "2026-10-12T15:54:59.093117+00:00",
+      "status": "SKIPPED",
+      "skip": "SCAVENGE_IN_FLIGHT"
+    }
+  },
+  "world_review": {
+    "generated_at": "2026-10-12T14:55:27+00:00",
+    "model": "gemini-3.8-flash-low",
+    "priorities": [
+      {
+        "action": "Zamerať farmenie výhradne na okolité barbarské a bonusové dediny (vzdialenosť 3.0 až 5.0 polí).",
+        "evidence": "V okruhu 5 polí je evidovaných minimálne 6 barbarských/bonusových dedín (napr. id 1757, 2456, 2184, 2716, 1516, 2422) s bodmi 32–48 bez prítomnosti kmeňa.",
+        "confidence": "high"
+      },
+      {
+        "action": "Investovať vyťažené suroviny do rozvoja produkcie a obrannej stability dediny bez použitia prémiových funkcií.",
+        "evidence": "Stav bodov chlpatucky (369 b.) stagnuje (delta_points: 0), čo indikuje oneskorenie voči priemeru top 20 hráčov.",
+        "confidence": "high"
+      },
+      {
+        "action": "Vyhľadať vstup do aktívneho kmeňa v lokálnom regióne na zabezpečenie diplomatického krytia a podpory.",
+        "evidence": "Top kmene ako Furio (23 407 b.) a Syčáci (22 939 b.) majú plnú kapacitu 20 členov a dominujú bodovo; hráč bez kmeňa čelí vyššiemu riziku izolácie pri fáze šľachticov.",
+        "confidence": "medium"
+      },
+      {
+        "action": "Monitorovať aktivitu a bodové zmeny susedov veroniccba (429 b.) a Mravec1 (272 b.) bez vyvolávania útokov.",
+        "evidence": "veroniccba je vzdialená 3.16 poľa s kmeňom 32 a delta_points 0; Mravec1 je vzdialený 3.0 poľa s 272 b.",
+        "confidence": "medium"
+      }
+    ],
+    "lessons": [
+      {
+        "learning": "Verejný bodový rast odráža výhradne úroveň budov a nedokazuje presné počty vojsk ani úmysly hráčov.",
+        "evidence_status": "verified"
+      },
+      {
+        "learning": "Na novom svete pred prvými prevzatými dedinami (delta_villages: 0) dominujú kmeňové rebríčky aliancie s plnou kapacitou 20 členov.",
+        "evidence_status": "observed"
+      },
+      {
+        "learning": "Samostatný hráč bez kmeňa v bezprostrednom susedstve organizovaných skupín zaostáva v tempe bez koordinovanej podpory.",
+        "evidence_status": "insufficient"
+      }
+    ]
+  }
+}

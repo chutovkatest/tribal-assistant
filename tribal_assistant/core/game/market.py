@@ -125,7 +125,7 @@ class SendParser:
         player = None
         for row in content.select("tr"):
             cells = row.find_all("td")
-            if len(cells) >= 2 and cells[0].get_text(strip=True).rstrip(":").lower() in ("jogador", "proprietário", "dono"):
+            if len(cells) >= 2 and cells[0].get_text(strip=True).rstrip(":").lower() in ("jogador", "proprietário", "dono", "hráč", "hrac", "vlastník", "vlastnik", "player", "owner"):
                 player = cells[1].get_text(" ", strip=True)
 
         return {"coords": coords, "player": player}

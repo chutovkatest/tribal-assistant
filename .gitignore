@@ -19,3 +19,7 @@ playwright-state.json
 /docs/forum/**/*.py
 /docs/forum/**/.log
 /docs/forum/**/.stdout
+
+# Local SK106 strategist credentials (never commit)
+/.secrets/
+/gemini_build.log

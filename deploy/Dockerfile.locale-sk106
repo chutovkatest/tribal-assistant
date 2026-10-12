@@ -1,0 +1,30 @@
+FROM tribal-sk106-pilot:sk106
+USER root
+COPY tribal_assistant/core/game/locale_text.py /app/tribal_assistant/core/game/locale_text.py
+COPY tribal_assistant/core/game/scraper/game.py /app/tribal_assistant/core/game/scraper/game.py
+COPY tribal_assistant/core/game/modules/game_sync.py /app/tribal_assistant/core/game/modules/game_sync.py
+COPY tribal_assistant/core/game/actions.py /app/tribal_assistant/core/game/actions.py
+COPY tribal_assistant/core/game/scraper/social.py /app/tribal_assistant/core/game/scraper/social.py
+COPY tribal_assistant/core/game/scraper/spy_report.py /app/tribal_assistant/core/game/scraper/spy_report.py
+COPY tribal_assistant/core/game/diplomacy.py /app/tribal_assistant/core/game/diplomacy.py
+COPY tribal_assistant/core/game/profile.py /app/tribal_assistant/core/game/profile.py
+COPY tribal_assistant/core/game/tribe.py /app/tribal_assistant/core/game/tribe.py
+COPY tribal_assistant/core/game/items.py /app/tribal_assistant/core/game/items.py
+COPY tribal_assistant/core/game/market.py /app/tribal_assistant/core/game/market.py
+COPY tribal_assistant/core/agents/clock.py /app/tribal_assistant/core/agents/clock.py
+COPY tribal_assistant/core/game/incoming.py /app/tribal_assistant/core/game/incoming.py
+COPY tribal_assistant/core/game/locale_text.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/locale_text.py
+COPY tribal_assistant/core/game/scraper/game.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/scraper/game.py
+COPY tribal_assistant/core/game/modules/game_sync.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/modules/game_sync.py
+COPY tribal_assistant/core/game/actions.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/actions.py
+COPY tribal_assistant/core/game/scraper/social.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/scraper/social.py
+COPY tribal_assistant/core/game/scraper/spy_report.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/scraper/spy_report.py
+COPY tribal_assistant/core/game/diplomacy.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/diplomacy.py
+COPY tribal_assistant/core/game/profile.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/profile.py
+COPY tribal_assistant/core/game/tribe.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/tribe.py
+COPY tribal_assistant/core/game/items.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/items.py
+COPY tribal_assistant/core/game/market.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/market.py
+COPY tribal_assistant/core/agents/clock.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/agents/clock.py
+COPY tribal_assistant/core/game/incoming.py /usr/local/lib/python3.13/site-packages/tribal_assistant/core/game/incoming.py
+RUN cd /tmp && python -B -c "from tribal_assistant.core.game.locale_text import report_category;assert report_category('Útok na dedinu')=='attack'"
+USER app

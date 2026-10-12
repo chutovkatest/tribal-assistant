@@ -9,7 +9,7 @@ from tribal_assistant.core.accounts.context import current_account
 from tribal_assistant.core.errors import UpstreamError
 from tribal_assistant.core.game.human import human_delay
 
-LOGIN_URL = "https://www.tribalwars.com.br/"
+LOGIN_URL = "https://www.divoke-kmene.sk/"
 PLAY_URL = LOGIN_URL + "page/play/{server}"
 
 LOGIN_FORM_SELECTOR = "#login_form #user"

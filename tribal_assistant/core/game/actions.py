@@ -7,6 +7,9 @@ answered. Guardrails live one layer up (tribal_assistant.core.agents.guardrails)
 
 from datetime import UTC, datetime
 from typing import Any
+from time import monotonic
+import json
+from pathlib import Path
 
 from loguru import logger
 from playwright.async_api import Error as PlaywrightError
@@ -47,6 +50,18 @@ from tribal_assistant.core.game.social import Social
 from tribal_assistant.core.game.tribe import TribeHall
 from tribal_assistant.core.game.wander import Wanderer
 
+def _build_metric(event: str, **values: Any) -> None:
+    """Durable build timing event; never affects game success/failure."""
+    try:
+        path = Path("/app/storage/build-latency-events.jsonl")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        row = {"event": event, "at_utc": datetime.now(UTC).isoformat(), **values}
+        with path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False, default=str) + "\n")
+    except Exception as exc:
+        logger.warning("BUILD_METRIC_WRITE_FAILED {}", str(exc)[:160])
+
+
 UNIT_SCREEN = {
     "spear": "barracks",
     "sword": "barracks",
@@ -66,7 +81,7 @@ SCAVENGE_HOME_JS = """() => Object.fromEntries([...document.querySelectorAll('.u
   .map(a => [a.dataset.unit, Number((a.innerText.match(/\\d+/) || [0])[0])]))"""
 
 CURRENT_FLAG_JS = """() => {
-  const th = [...document.querySelectorAll('#content_value th')].find(t => /Atual bandeira/.test(t.innerText));
+  const th = [...document.querySelectorAll('#content_value th')].find(t => /Aktu[aá]lna vlajka|Aktu[aá]ln[ií] vlajka|Atual bandeira|Current flag/i.test(t.innerText));
   const cell = th && th.closest('table').querySelector('td');
   return cell ? (cell.querySelector('strong')?.innerText.trim() + ' ' + (cell.querySelector('p')?.innerText.trim() || '')).trim() : '';
 }"""
@@ -75,7 +90,7 @@ FLAGS_STATE_JS = """() => {
   const owned = [...document.querySelectorAll('.flag_box:not(.flag_box_empty)')]
     .map(n => n.id.replace('flag_box_', '').split('_').map(Number))
     .filter(p => p.length === 2 && p.every(Number.isFinite));
-  const th = [...document.querySelectorAll('#content_value th')].find(t => /Atual bandeira/.test(t.innerText));
+  const th = [...document.querySelectorAll('#content_value th')].find(t => /Aktu[aá]lna vlajka|Aktu[aá]ln[ií] vlajka|Atual bandeira|Current flag/i.test(t.innerText));
   const cell = th && th.closest('table').querySelector('td');
   const current = cell ? (cell.querySelector('strong')?.innerText || '').trim() : '';
   return {owned, current};
@@ -91,7 +106,7 @@ KNIGHT_STATE_JS = """() => {
 }"""
 
 MARKET_OFFERS_JS = """() => {
-  const names = {Madeira: 'wood', Argila: 'stone', Ferro: 'iron'};
+  const names = {Madeira:'wood',Argila:'stone',Ferro:'iron',Drevo:'wood',Hlina:'stone',Železo:'iron',Zelezo:'iron',Dřevo:'wood',Hlína:'stone',Wood:'wood',Clay:'stone',Iron:'iron'};
   const res = (td) => {
     const icon = td && td.querySelector('.icon.header[data-title]');
     return {res: icon ? names[icon.dataset.title] || null : null, amount: Number((td ? td.innerText : '').replace(/\\D/g, '')) || 0};
@@ -112,8 +127,8 @@ MARKET_OFFERS_JS = """() => {
 
 MERCHANTS_JS = """() => {
   const text = (document.querySelector('#content_value') || document.body).innerText;
-  const m = text.match(/Comerciantes:\\s*(\\d+)\\s*\\/\\s*(\\d+)/);
-  const c = text.match(/transporte:\\s*([\\d.]+)/);
+  const m = text.match(/(?:Comerciantes|Obchodn[ií]ci|Obchodn[ií]kov|Merchants):\\s*(\\d+)\\s*\\/\\s*(\\d+)/);
+  const c = text.match(/(?:transporte|prepravn[aá] kapacita|nosnos[tť]|transport capacity):\\s*([\\d.]+)/);
   return {free: m ? Number(m[1]) : 0, total: m ? Number(m[2]) : 0, carry: c ? Number(c[1].replace(/\\D/g, '')) : 0};
 }"""
 
@@ -259,6 +274,8 @@ class GameActions:
     async def click_free_finish(self, page: Page) -> int:
         """Click the free "finish now" button on short build orders; never the paid premium ones."""
         finished = 0
+        started = monotonic()
+        before = await evaluate_page(page, BUILD_QUEUE_JS) or []
 
         for _ in range(5):
             button = page.locator(FREE_FINISH).first
@@ -270,17 +287,24 @@ class GameActions:
                 if wait is None or wait > FREE_WAIT_MAX:
                     break
 
-                try:
-                    await button.wait_for(state="visible", timeout=int(wait * 1000) + 3_000)
-                except PlaywrightError:
-                    break
+                # Never hold the shared browser lock while waiting for the
+                # free-finish window. The scheduled watcher will check again.
+                break
 
             classes = await button.get_attribute("class") or ""
             if "btn-instant-free" not in classes:
                 break
 
-            await self._click_and_settle(page, button)
+            clicked_at = monotonic()
+            await self._click_and_settle(page, button, timeout=3_000)
             finished += 1
+            after = await evaluate_page(page, BUILD_QUEUE_JS) or []
+            _build_metric(
+                "free_finish_click", queue_before=before, queue_after=after,
+                click_seconds=round(monotonic()-clicked_at, 3),
+                total_finish_operation_seconds=round(monotonic()-started, 3),
+            )
+            before = after
 
         if finished:
             logger.info("{} construção(ões) concluída(s) grátis", finished)
@@ -292,9 +316,19 @@ class GameActions:
 
     async def finish_free(self, village_id: str) -> ActionResult:
         """Open the headquarters and use every free "finish now" available."""
+        started = monotonic()
         async with game_session.lock:
+            acquired = monotonic()
             page = await self._in_game(village_id, "main")
+            navigated = monotonic()
             finished = await self.click_free_finish(page)
+            _build_metric(
+                "free_finish_poll", village_id=village_id, finished=finished,
+                lock_wait_seconds=round(acquired-started, 3),
+                navigation_seconds=round(navigated-acquired, 3),
+                check_and_click_seconds=round(monotonic()-navigated, 3),
+                total_poll_seconds=round(monotonic()-started, 3),
+            )
 
         if not finished:
             return ActionResult(
@@ -435,8 +469,11 @@ class GameActions:
         self, village_id: str, building: str, finish_free: bool = True
     ) -> ActionResult:
         """Queue the next level of `building` from the headquarters screen."""
+        started = monotonic()
         async with game_session.lock:
+            acquired = monotonic()
             page = await self._in_game(village_id, "main")
+            navigated = monotonic()
             before = await evaluate_page(page, BUILD_QUEUE_JS) or []
             next_before = await page.evaluate(NEXT_LEVEL_JS, building)
 
@@ -451,7 +488,11 @@ class GameActions:
                 )
 
             level = await button.first.get_attribute("data-level-next")
-            await self._click_and_settle(page, button.first)
+            click_started = monotonic()
+            # Build buttons can complete via AJAX; do not wait 15s for a navigation
+            # that will never occur. The existing queue verification remains mandatory.
+            await self._click_and_settle(page, button.first, timeout=3_000)
+            click_done = monotonic()
 
             if error := await self._game_error(page):
                 return ActionResult(False, "upgrade_building", error, {"building": building})
@@ -480,8 +521,24 @@ class GameActions:
                     {"building": building},
                 )
 
+            verified = monotonic()
             finished = await self.click_free_finish(page) if finish_free else 0
-
+            completed = monotonic()
+            logger.info(
+                "BUILD_LATENCY building={} lock_wait_s={:.3f} navigation_s={:.3f} click_s={:.3f} verify_s={:.3f} free_finish_s={:.3f} total_s={:.3f}",
+                building, acquired-started, navigated-acquired, click_done-click_started,
+                verified-click_done, completed-verified, completed-started,
+            )
+            _build_metric(
+                "build_submitted", village_id=village_id, building=building,
+                next_level=level, queue_before=before, queue_after=after,
+                lock_wait_seconds=round(acquired-started, 3),
+                navigation_seconds=round(navigated-acquired, 3),
+                click_seconds=round(click_done-click_started, 3),
+                verify_seconds=round(verified-click_done, 3),
+                immediate_free_finish_seconds=round(completed-verified, 3),
+                total_submit_seconds=round(completed-started, 3),
+            )
             logger.info("{} nível {} na fila da aldeia {}", building, level, village_id)
             return ActionResult(
                 True,
@@ -947,7 +1004,7 @@ class GameActions:
 
             await self._open_relics(page, village_id)
             status = " ".join((await page.locator("#village_equip_status").inner_text()).split())
-            if "nenhuma relíquia equipada" in status:
+            if any(term in status.casefold() for term in ("nenhuma relíquia equipada", "žiadna relikvia", "žiadnu relikviu", "žádná relikvie", "no relic equipped")):
                 return ActionResult(
                     False,
                     "equip_relic",

@@ -17,19 +17,19 @@ if TYPE_CHECKING:
 MENTORS_JS = """() => [...document.querySelectorAll('a[href*="action=accept_mentor"]')].map(a => {
   const card = a.closest('table');
   const text = card ? card.textContent.replace(/\\s+/g, ' ') : '';
-  const points = (text.match(/Pontos:\\s*([\\d.]+)/) || [])[1] || '0';
-  const rank = (text.match(/Classificação:\\s*(\\d+)/) || [])[1] || '0';
+  const points = (text.match(/(?:Pontos|Body|Points):\\s*([\\d.]+)/i) || [])[1] || '0';
+  const rank = (text.match(/(?:Classificação|Poradie|Umiestnenie|Rank):\\s*(\\d+)/i) || [])[1] || '0';
   return {
     id: new URL(a.href, location.href).searchParams.get('mentor_id'),
     name: (card?.querySelector('th')?.textContent || '').trim(),
     points: Number(points.replace(/\\D/g, '')),
     rank: Number(rank),
-    recommended: /Recomendado/.test(text),
+    recommended: /Recomendado|Odpor[uú][cč]an[yý]|Recommended/i.test(text),
   };
 })"""
 
 
-GONE = "Tribo não encontrada"
+GONE = ("Tribo não encontrada", "Kmeň neexistuje", "Kmeň nebol nájdený", "Tribe not found")
 GONE_TEXT = "a tribo não existe mais"
 
 class Diplomacy:
@@ -65,7 +65,7 @@ class Diplomacy:
             page = await self.actions._in_game(village_id, "info_ally", mode="apply", id=ally_id)
             html = await page.content()
             self.actions._capture(html, "tribe_apply")
-            if GONE in html:
+            if any(label.casefold() in html.casefold() for label in GONE):
                 return ActionResult(False, "apply_to_tribe", GONE_TEXT, {"gone": True})
 
             field = page.locator("form textarea:visible").first

@@ -1,0 +1,10 @@
+[Unit]
+Description=Export SK106 status and LC Rush progress to approved MCP read path
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/worker/tribal-sk106-lab
+ExecStart=/usr/bin/python3 /home/worker/tribal-sk106-lab/sk106_status_export_v2.py
+Environment=PYTHONDONTWRITEBYTECODE=1
+TimeoutStartSec=35
+NoNewPrivileges=true

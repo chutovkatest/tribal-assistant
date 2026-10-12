@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 MODES = ("overview", "members", "forum")
 FORUM_FIELD = 'textarea[name="message"]:visible, form textarea:visible'
-FORUM_OPEN = '#content_value a:has-text("Responder"), #content_value a[href*="answer=true"]'
+FORUM_OPEN = '#content_value a:has-text("Responder"), #content_value a:has-text("Odpovedať"), #content_value a:has-text("Odpovědět"), #content_value a:has-text("Reply"), #content_value a[href*="answer=true"]'
 SUBMIT = 'input[type="submit"], button[type="submit"]'
 
 

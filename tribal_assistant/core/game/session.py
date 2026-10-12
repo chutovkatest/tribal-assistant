@@ -64,8 +64,8 @@ class GameSession:
         self._context = await self._browser.new_context(
             storage_state=str(self.state_file) if self.state_file.exists() else None,
             viewport=random.choice(VIEWPORTS),
-            locale="pt-BR",
-            timezone_id="America/Sao_Paulo",
+            locale="sk-SK",
+            timezone_id="Europe/Bratislava",
         )
         self._page = await self._context.new_page()
         Narrator.watch(self._page)

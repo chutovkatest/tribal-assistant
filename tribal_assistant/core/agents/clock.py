@@ -6,7 +6,7 @@ from typing import Any
 
 from tribal_assistant.core.game.scraper.game import SERVER_TZ
 
-GAME_CLOCK = re.compile(r"(hoje|amanhã) às (\d{1,2}):(\d{2})")
+GAME_CLOCK = re.compile(r"(dnes|zajtra|zítra|hoje|amanhã|today|tomorrow)\s*(?:o|às|at)?\s*(\d{1,2}):(\d{2})", re.I)
 
 
 class Clock:
@@ -84,6 +84,6 @@ class Clock:
         if not match:
             return text
 
-        day = self.now.astimezone(SERVER_TZ).date() + timedelta(days=1 if match[1] == "amanhã" else 0)
+        day = self.now.astimezone(SERVER_TZ).date() + timedelta(days=1 if match[1].casefold() in ("amanhã", "zajtra", "zítra", "tomorrow") else 0)
         moment = datetime(day.year, day.month, day.day, int(match[2]), int(match[3]), tzinfo=SERVER_TZ)
         return f"{text} ({self.relative(moment)})"
