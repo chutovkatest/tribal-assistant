@@ -118,7 +118,22 @@ def affordable(v):
         result.append(name)
     return result
 
+LC_RESEARCH_COST={"wood":2200,"clay":2400,"iron":2000}  # Confirmed from SK106 smith HTML 2026-10-12
+
+def light_research_reserve(v):
+    """Keep scarce resources for light research after the LC building milestones."""
+    b=buildings(v)
+    if any(b.get(n,{}).get("level",0)<lvl for n,lvl in (("main",10),("smith",5),("stable",3))):
+        return False
+    unit=next((u for u in v.get("units",[]) if u.get("name")=="light"),None)
+    return bool(unit and not unit.get("available") and "Výskum" in str(unit.get("blocker") or ""))
+
+
 def ranked_candidates(v,candidates,priorities):
+    if light_research_reserve(v):
+        shortages={k:max(0,n-v.get(k,0)) for k,n in LC_RESEARCH_COST.items()}
+        print("LC_RESEARCH_RESOURCE_RESERVATION",shortages)
+        return []
     # Strict Light Cavalry Rush goals override general early economic ranking.
     # Only the existing safe, pinned, verified action path can issue upgrades.
     from sk106_lc_rush_policy import lc_rush_candidates
