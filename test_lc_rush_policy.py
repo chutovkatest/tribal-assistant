@@ -31,6 +31,7 @@ class LCRushTests(unittest.TestCase):
         self.assertEqual((pick,goal),([],"WAIT_FOR_stable:1"))
     def test_all_milestones_stop(self):
         active,pick,goal=lc_rush_candidates(snapshot(smith=5,main=10,stable=3),["wall"])
+        self.assertFalse(active)
         self.assertEqual((pick,goal),([],"LC_MILESTONES_READY_CHECK_RESEARCH"))
     def test_missing_core_buildings_fail_closed(self):
         self.assertFalse(lc_rush_candidates({"buildings":[]},["wall"])[0])
